@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Solved</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+	<!-- Top Navigation Bar -->
+	<nav class="top-nav">
+		<div class="nav-left">
+			<div class="nav-logo">
+				<img src="{{ url_for('static', filename='logo.jpg') }}" alt="IssueSense Logo" width="36" height="36">
+			</div>
+			<div class="nav-text">
+				<h1 class="nav-title">IssueSense</h1>
+				<p class="nav-subtitle">Solved complaints overview</p>
+			</div>
+		</div>
+		<div class="nav-right">
+			<a href="/dashboard" class="nav-button">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<rect x="3" y="3" width="7" height="7" rx="1"/>
+					<rect x="14" y="3" width="7" height="7" rx="1"/>
+					<rect x="14" y="14" width="7" height="7" rx="1"/>
+					<rect x="3" y="14" width="7" height="7" rx="1"/>
+				</svg>
+				<span>Dashboard</span>
+			</a>
+		</div>
+	</nav>
+
+	<div class="dashboard-container">
+		<section class="classification-card">
+			<div class="card-header-section">
+				<div class="header-with-icon">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+						<circle cx="11" cy="11" r="8"/>
+						<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+					</svg>
+					<h2 class="card-title">Find Complaint by ID</h2>
+				</div>
+			</div>
+
+			<form action="/solved" method="POST" class="complaint-form">
+				<div class="input-group">
+					<input
+						name="complaint_id"
+						id="complaint-id-input"
+						class="complaint-id-input"
+						type="text"
+						placeholder="Enter complaint ID"
+						value="{{ searched_id|default('') }}"
+						required
+					>
+					<div class="input-footer">
+						<span class="char-hint">Use the id to find the complaint</span>
+					</div>
+				</div>
+
+				<div class="form-actions">
+					<button type="submit" name="action" value="search" class="submit-button">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+						<span>Search</span>
+					</button>
+				</div>
+			</form>
+
+			{% if action_message %}
+			<div class="results-display">
+				<div class="results-header">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+						<polyline points="20 6 9 17 4 12"/>
+					</svg>
+					<h3>Action Status</h3>
+				</div>
+				<div class="results-content">
+					<div class="result-item">
+						<span class="result-label">Message:</span>
+						<span class="result-badge status-badge {{ action_message_type|default('pending') }}">{{ action_message }}</span>
+					</div>
+				</div>
+			</div>
+			{% endif %}
+
+			{% if search_result %}
+			{% set category_text = search_result["predicted_category"]|default("--") %}
+			{% set category_key = category_text|lower %}
+			{% if "billing" in category_key %}
+				{% set category_class = "billing" %}
+			{% elif "account" in category_key or "privacy" in category_key %}
+				{% set category_class = "account" %}
+			{% elif "service" in category_key or "delivery" in category_key or "support" in category_key %}
+				{% set category_class = "service" %}
+			{% elif "feedback" in category_key %}
+				{% set category_class = "feedback" %}
+			{% else %}
+				{% set category_class = "tech" %}
+			{% endif %}
+
+			{% set sentiment_text = search_result["sentiment"]|default("--") %}
+			{% if sentiment_text == "Negative" %}
+				{% set priority_text = "High" %}
+				{% set priority_class = "high" %}
+			{% elif sentiment_text == "Neutral" %}
+				{% set priority_text = "Medium" %}
+				{% set priority_class = "medium" %}
+			{% elif sentiment_text == "Positive" %}
+				{% set priority_text = "Low" %}
+				{% set priority_class = "low" %}
+			{% else %}
+				{% set priority_text = "--" %}
+				{% set priority_class = "low" %}
+			{% endif %}
+
+			{% set status_text = search_result["status"]|default("pending") %}
+			{% set status_class = status_text|lower %}
+
+			<div class="results-display">
+				<div class="results-header">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+					</svg>
+					<h3>Complaint Details</h3>
+				</div>
+				<div class="results-content">
+					<p><strong>ID:</strong> {{ search_result['id']|default('--') }}</p>
+					<p><strong>Category:</strong> {{ category_text }}</p>
+					<p><strong>Sentiment:</strong> {{ sentiment_text }}</p>
+					<p><strong>Priority:</strong> {{ priority_text }}</p>
+					<p><strong>Status:</strong> {{ status_text }}</p>
+					<p><strong>Submitted:</strong> {{ search_result['created_at']|default('--') }}</p>
+					<p><strong>Complaint:</strong> [content hidden]</p>
+				</div>
+				{% if status_text|lower != "resolved" %}
+				<form action="/solved" method="POST" class="form-actions">
+					<input type="hidden" name="complaint_id" value="{{ search_result['id'] }}">
+					<button type="submit" name="action" value="resolve" class="submit-button">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<polyline points="20 6 9 17 4 12"/>
+						</svg>
+						<span>Mark Solved</span>
+					</button>
+				</form>
+				{% endif %}
+			</div>
+			{% endif %}
+		</section>
+
+		<section class="recent-complaints-card">
+			<div class="section-header">
+				<h2 class="section-title">SOLVED COMPLAINTS</h2>
+				<span class="record-count">{{ resolved_complaints|default([])|length }} total</span>
+			</div>
+
+			{% if resolved_complaints|default([])|length > 0 %}
+			<div class="table-wrapper">
+				<table class="complaints-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Complaint</th>
+							<th>Category</th>
+							<th>Sentiment</th>
+							<th>Priority</th>
+							<th>Status</th>
+							<th>Submitted</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for complaint in resolved_complaints %}
+						{% set category_text = complaint["predicted_category"]|default("--") %}
+						{% set category_key = category_text|lower %}
+						{% if "billing" in category_key %}
+							{% set category_class = "billing" %}
+						{% elif "account" in category_key or "privacy" in category_key %}
+							{% set category_class = "account" %}
+						{% elif "service" in category_key or "delivery" in category_key or "support" in category_key %}
+							{% set category_class = "service" %}
+						{% elif "feedback" in category_key %}
+							{% set category_class = "feedback" %}
+						{% else %}
+							{% set category_class = "tech" %}
+						{% endif %}
+
+						{% set sentiment_text = complaint["sentiment"]|default("--") %}
+						{% if sentiment_text == "Negative" %}
+							{% set priority_text = "High" %}
+							{% set priority_class = "high" %}
+						{% elif sentiment_text == "Neutral" %}
+							{% set priority_text = "Medium" %}
+							{% set priority_class = "medium" %}
+						{% elif sentiment_text == "Positive" %}
+							{% set priority_text = "Low" %}
+							{% set priority_class = "low" %}
+						{% else %}
+							{% set priority_text = "--" %}
+							{% set priority_class = "low" %}
+						{% endif %}
+
+						<tr>
+							<td class="time-col">{{ complaint["id"]|default("--") }}</td>
+							<td class="complaint-col">
+								<span class="complaint-text">[content hidden]</span>
+							</td>
+							<td>
+								<div class="category-indicator">
+									<span class="category-dot {{ category_class }}"></span>
+									<span>{{ category_text }}</span>
+								</div>
+							</td>
+							<td>{{ sentiment_text }}</td>
+							<td>
+								<span class="priority-badge {{ priority_class }}">{{ priority_text }}</span>
+							</td>
+							<td>
+								<span class="status-badge resolved">Solved</span>
+							</td>
+							<td class="time-col">{{ complaint["created_at"]|default("--") }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			{% else %}
+			<div class="results-display">
+				<div class="results-header">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+						<polyline points="20 6 9 17 4 12"/>
+					</svg>
+					<h3>No solved complaints yet</h3>
+				</div>
+				<div class="results-content">
+					<div class="result-item">
+						<span class="result-label">Tip:</span>
+						<span class="result-badge status-badge">Resolve complaints in Supabase to see them here.</span>
+					</div>
+				</div>
+			</div>
+			{% endif %}
+		</section>
+	</div>
+</body>
+</html>
