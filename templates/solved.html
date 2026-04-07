@@ -63,7 +63,7 @@
 				</div>
 
 				<div class="form-actions">
-					<button type="submit" name="action" value="search" class="submit-button">
+					<button type="submit" name="action" value="search" class="submit-button submit-button--compact">
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<circle cx="11" cy="11" r="8"/>
 							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -142,7 +142,7 @@
 				{% if status_text|lower != "resolved" %}
 				<form action="/solved" method="POST" class="form-actions">
 					<input type="hidden" name="complaint_id" value="{{ search_result['id'] }}">
-					<button type="submit" name="action" value="resolve" class="submit-button">
+					<button type="submit" name="action" value="resolve" class="submit-button submit-button--compact">
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<polyline points="20 6 9 17 4 12"/>
 						</svg>

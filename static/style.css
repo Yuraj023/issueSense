@@ -1598,7 +1598,7 @@ table tbody tr:last-child td {
     flex-wrap: wrap;
 }
 
-.form-actions .submit-button {
+.form-actions .submit-button:not(.submit-button--compact) {
     flex: 1 1 200px;
 }
 
@@ -1668,6 +1668,11 @@ table tbody tr:last-child td {
         0 4px 6px -1px rgba(6, 182, 212, 0.3),
         0 10px 20px -5px rgba(6, 182, 212, 0.2);
     align-self: flex-start;
+}
+
+.submit-button--compact {
+    align-self: flex-start;
+    width: auto;
 }
 
 .submit-button::before {
@@ -2069,6 +2074,10 @@ table tbody tr:last-child td {
         padding: var(--space-sm) var(--space-md);
         font-size: 0.9375rem;
     }
+
+    .submit-button--compact {
+        width: auto;
+    }
     
     .submit-button svg {
         width: 16px !important;
@@ -2190,6 +2199,10 @@ table tbody tr:last-child td {
     .submit-button {
         padding: var(--space-xs) var(--space-sm);
         font-size: 0.875rem;
+    }
+
+    .submit-button--compact {
+        width: auto;
     }
     
     .submit-button svg {
